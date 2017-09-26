@@ -4,6 +4,7 @@
 #               For the use of African Society(300+ members), Netsoc (400+ members) and C&E(3000+ members)
 
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 import time
 import csv
 
@@ -11,6 +12,7 @@ def automate_society_members():
 
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
+    safe = True
 
     browser = webdriver.Chrome(executable_path='C:\Chrm\chromedriver.exe',chrome_options=options)
     browser.get('https://sisweb.ucd.ie/')
@@ -38,7 +40,7 @@ def automate_society_members():
     club_memebership.click()
 
     #csv file is opened and then used to load information
-    with open("lol.csv") as fil:
+    with open("File.csv") as fil:
         reader = csv.reader(fil, delimiter=',')
         next(reader)
 
@@ -50,8 +52,9 @@ def automate_society_members():
             #row = browser.find_element_by_xpath('//*[@id="SA200-1|2"]/td[5]/a')
 
             #C&E
-            row = browser.find_element_by_xpath('//*[@id="SA200-1|1"]/td[5]/a')
-            row.click()
+            if(safe):
+                row = browser.find_element_by_xpath('//*[@id="SA200-1|1"]/td[5]/a')
+                row.click()
 
             #where student number will be entered
 
@@ -62,9 +65,18 @@ def automate_society_members():
             check_name = browser.find_element_by_name('p_BUTTON')
             check_name.click()
 
+            safe = True
+
             #save new member
             save = browser.find_element_by_css_selector('input.menubutton')
             save.click()
+
+            #if member already exists in the SISWEB database clear the entry and run loop again
+            try:
+                browser.find_element_by_xpath('//*[@id="1"]/div[1]/div/input[3]').click()
+                safe = False
+            except NoSuchElementException:
+                safe = True
 
 #call function...sit back and relax
 automate_society_members()
